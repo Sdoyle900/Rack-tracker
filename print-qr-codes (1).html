@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RackTrack — Print All QR Codes</title>
+  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+  <style>
+    body { font-family: 'Courier New', monospace; background: #fff; padding: 20px; }
+    h1 { font-size: 20px; font-weight: 900; letter-spacing: 2px; margin-bottom: 4px; }
+    #subtitle { font-size: 12px; color: #64748b; font-family: sans-serif; margin-bottom: 20px; }
+    #status { font-size: 14px; color: #4f46e5; font-family: sans-serif; margin-bottom: 16px; font-weight: 600; }
+    .toolbar { display: flex; gap: 10px; margin-bottom: 20px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .btn-blue { background: #4f46e5; color: #fff; }
+    .btn-grey { background: #f1f5f9; color: #0f172a; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .card { border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center; break-inside: avoid; page-break-inside: avoid; }
+    .rack-id { font-size: 13px; font-weight: 900; letter-spacing: 1px; margin: 6px 0 2px; color: #0f172a; }
+    .rack-notes { font-size: 10px; color: #64748b; font-family: sans-serif; }
+    .rack-status { font-size: 10px; color: #4f46e5; font-family: sans-serif; }
+    @media print {
+      .toolbar { display: none !important; }
+      @page { margin: 8mm; }
+      .grid { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>▦ RACKTRACK — All QR Codes</h1>
+<div id="subtitle"></div>
+<div id="status">Loading racks from database…</div>
+<div class="toolbar" id="toolbar" style="display:none">
+  <button class="btn btn-blue" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  <button class="btn btn-grey" onclick="location.reload()">↻ Regenerate</button>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+const SUPABASE_URL  = "https://ldljqksuwzxyqngavvqq.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkbGpxa3N1d3p4eXFuZ2F2dnFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNjY3NzcsImV4cCI6MjA5NjY0Mjc3N30.ZVyrBNettgmuRKBPu6q2gPBmIIim13UiVK3bL_o_DEI";
+const APP_URL       = "https://sdoyle900.github.io/Rack-tracker/index.html";
+
+window.addEventListener('load', async function() {
+  const statusEl = document.getElementById('status');
+  const grid     = document.getElementById('grid');
+
+  try {
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    const { data, error } = await sb.from('racks').select('rack_id, notes, status').order('rack_id');
+
+    if (error) { statusEl.textContent = 'Error: ' + error.message; statusEl.style.color = '#dc2626'; return; }
+    if (!data || !data.length) { statusEl.textContent = 'No racks found.'; return; }
+
+    statusEl.textContent = 'Generating ' + data.length + ' QR codes…';
+
+    let done = 0;
+    for (const r of data) {
+      const url    = APP_URL + '?scan=' + encodeURIComponent(r.rack_id);
+      const canvas = document.createElement('canvas');
+      await new Promise(resolve => {
+        QRCode.toCanvas(canvas, url, { width: 150, margin: 1, color: { dark: '#0f172a', light: '#ffffff' } }, resolve);
+      });
+      canvas.style.borderRadius = '6px';
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML =
+        '<div class="rack-id">' + r.rack_id + '</div>' +
+        (r.notes ? '<div class="rack-notes">' + r.notes + '</div>' : '') +
+        '<div class="rack-status">' + r.status + '</div>';
+      card.insertBefore(canvas, card.firstChild);
+      grid.appendChild(card);
+
+      done++;
+      statusEl.textContent = 'Generating… ' + done + ' / ' + data.length;
+    }
+
+    document.getElementById('subtitle').textContent =
+      'Generated ' + new Date().toLocaleDateString('en-IE') + ' · ' + data.length + ' racks';
+    statusEl.style.display = 'none';
+    document.getElementById('toolbar').style.display = 'flex';
+
+  } catch(e) {
+    statusEl.textContent = 'Error: ' + e.message;
+    statusEl.style.color = '#dc2626';
+  }
+});
+</script>
+</body>
+</html>
