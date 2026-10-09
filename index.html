@@ -14,9 +14,7 @@
   <link rel="manifest" href="manifest.json" />
   <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
-  <!-- Quagga2: 1-D barcode scanning for Carey Glass timber rack labels (Code 128 / Code 39 / EAN) -->
-  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>RackTrack</title>
   <link id="leaflet-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -158,13 +156,7 @@
     }
 
     /* ── Tables become stacked cards on phones ──────────────── */
-    /* Quagga2 renders its own video+canvas inside the container — force them to fill it */
-    #bulkscan-timber-stage video,#bulkscan-timber-stage canvas.drawingBuffer{
-      position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:cover;
-    }
-    .badge-timber{background:#ede9fe;color:#5b21b6}
-
-    @media(max-width:820px){
+@media(max-width:820px){
       .table-wrap{border:none;background:transparent;box-shadow:none;overflow-x:visible;border-radius:0}
       .rack-table{min-width:0;width:100%;border-collapse:separate;border-spacing:0}
       .rack-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -240,7 +232,6 @@
         <button class="tab active" data-tab="racks" onclick="switchTab('racks')">Racks</button>
         <button class="tab" data-tab="map" onclick="switchTab('map')">🗺 Map View</button>
         <button class="tab" data-tab="bulkscan" id="bulkscan-tab-btn" onclick="switchTab('bulkscan')">📷 Scan</button>
-        <button class="tab" data-tab="timber" id="timber-tab-btn" onclick="switchTab('timber')">🪵 Timber Racks</button>
         <button class="tab" data-tab="deliveries" id="deliveries-tab-btn" onclick="switchTab('deliveries')">🚚 Deliveries</button>
         <button class="tab" data-tab="add" id="add-tab-btn" onclick="switchTab('add')">+ Add Rack</button>
       </nav>
@@ -359,77 +350,24 @@
     </div>
   </div>
 
-  <!-- TIMBER RACKS TAB -->
-  <div id="tab-timber" class="tab-content hidden">
-    <div class="content-inner">
-      <!-- Toolbar -->
-      <div class="table-toolbar">
-        <input type="text" id="timber-search" placeholder="Search rack ID, site, operator, notes…" oninput="applyTimberView()" />
-        <button class="btn-outline" id="timber-inuse-btn" onclick="toggleTimberInUse()">🚚 In Use</button>
-        <button class="btn-outline" id="timber-empty-away-btn" onclick="toggleTimberEmptyAway()">✅ Empty away</button>
-        <button class="btn-outline" onclick="loadTimberRacks()">↻ Refresh</button>
-      </div>
-      <!-- Table -->
-      <div class="table-wrap">
-        <table class="rack-table">
-          <thead><tr>
-            <th>Rack ID</th>
-            <th>Status</th>
-            <th>Site</th>
-            <th>Coordinates</th>
-            <th>Last Scanned</th>
-            <th>Notes</th>
-            <th>Operator</th>
-            <th id="timber-action-th">Actions</th>
-          </tr></thead>
-          <tbody id="timber-tbody"><tr><td colspan="8" class="empty-state">Loading timber racks…</td></tr></tbody>
-        </table>
-      </div>
-
-    </div>
-  </div>
-
   <div id="tab-bulkscan" class="tab-content hidden">
     <div class="content-inner">
-      <!-- Mode toggle -->
       <div style="margin-bottom:16px;">
-        <h2 style="font-size:18px;font-weight:800;margin-bottom:10px;">📷 Bulk Scan</h2>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-          <button id="bulkscan-mode-qr" class="btn-primary" onclick="setBulkScanMode('qr')" style="font-size:13px;padding:8px 18px;">🔲 Rack QR Codes</button>
-          <button id="bulkscan-mode-timber" class="btn-outline" onclick="setBulkScanMode('timber')" style="font-size:13px;padding:8px 18px;">🪵 Timber Barcodes</button>
-        </div>
-        <p id="bulkscan-mode-desc" style="color:#64748b;font-size:13px;margin-top:4px;">Scan each rack's QR code one after another as they come back to HQ. Your current location is saved for every rack scanned.</p>
+        <h2 style="font-size:18px;font-weight:800;">Bulk Scan — Racks Returned to Yard</h2>
+        <p style="color:#64748b;font-size:13px;margin-top:2px;">Scan each rack's QR code one after another as they come back to HQ. Your current location is saved for every rack scanned — same as a normal QR check-in.</p>
       </div>
 
       <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
         <div style="flex:0 0 380px;max-width:100%;">
-          <!-- QR camera (jsQR) — shown in QR mode -->
           <div id="bulkscan-stage" style="position:relative;background:#0f172a;border-radius:14px;overflow:hidden;width:100%;height:58vh;max-height:480px;min-height:300px;">
             <video id="bulkscan-video" playsinline muted autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
             <canvas id="bulkscan-overlay" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;"></canvas>
             <div id="bulkscan-hint" style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:linear-gradient(transparent,rgba(15,23,42,.85));color:#fff;font-size:14px;font-weight:600;text-align:center;">Press Start Camera to begin</div>
           </div>
-          <!-- Timber camera (Quagga2) — shown in timber mode -->
-          <div id="bulkscan-timber-stage" class="hidden" style="position:relative;background:#0f172a;border-radius:14px;overflow:hidden;width:100%;height:58vh;max-height:480px;min-height:300px;">
-            <!-- Quagga2 injects its video + canvas here -->
-            <div id="bulkscan-timber-hint" style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:linear-gradient(transparent,rgba(15,23,42,.85));color:#fff;font-size:14px;font-weight:600;text-align:center;z-index:10;pointer-events:none;">Press Start Camera to begin</div>
-          </div>
           <div id="bulkscan-status" style="margin-top:10px;font-size:13px;font-weight:600;color:#64748b;min-height:18px;"></div>
           <div style="display:flex;gap:10px;margin-top:10px;">
             <button class="btn-primary" id="bulkscan-start-btn" onclick="startBulkScanCamera()">▶ Start Camera</button>
             <button class="btn-outline" id="bulkscan-stop-btn" onclick="stopBulkScanCamera()" style="display:none;">■ Stop Camera</button>
-          </div>
-          <!-- Timber-mode fields (site / operator) — hidden in QR mode -->
-          <div id="bulkscan-timber-fields" class="hidden" style="margin-top:16px;padding-top:14px;border-top:1px solid #e2e8f0;">
-            <p style="color:#64748b;font-size:12px;margin-bottom:12px;">Scanning within <strong>2 km of SD Tallaght HQ</strong> or <strong>0.5 km of SDW HQ</strong> (Roscommon) will <strong>delete</strong> the rack record — rack has been returned.</p>
-            <div class="field-group">
-              <label style="color:#64748b;">Site Name <span class="optional">(optional)</span></label>
-              <input type="text" id="timber-scan-site" placeholder="e.g. Castlelands, Dublin Site" />
-            </div>
-            <div class="field-group">
-              <label style="color:#64748b;">Operator <span style="color:#dc2626;font-weight:700;">*</span></label>
-              <input type="text" id="timber-scan-operator" placeholder="Your name" />
-            </div>
           </div>
         </div>
 
@@ -438,7 +376,7 @@
             <h3 style="font-size:14px;font-weight:800;color:#0f172a;">Scanned this session (<span id="bulkscan-count">0</span>)</h3>
             <button class="btn-outline" onclick="clearBulkScanList()" style="font-size:12px;padding:6px 12px;">Clear list</button>
           </div>
-          <div id="bulkscan-list" style="display:flex;flex-direction:column;gap:6px;max-height:480px;overflow-y:auto;">
+          <div id="bulkscan-list" style="display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto;">
             <div class="empty-state" style="padding:24px 0;">No racks scanned yet this session.</div>
           </div>
         </div>
@@ -500,28 +438,6 @@
     <div style="display:flex;gap:10px;margin-top:4px;">
       <button class="btn-primary" style="flex:2" onclick="saveEdit()">Save Changes</button>
       <button class="btn-outline" style="flex:1;border-color:#fecaca;color:#dc2626;" onclick="deleteRack()">Delete</button>
-    </div>
-  </div>
-</div>
-
-<!-- TIMBER EDIT MODAL -->
-<div id="timber-edit-modal" class="modal-overlay hidden" onclick="closeTimberEditModal(event)">
-  <div class="modal-card" style="background:#fff;max-width:420px;text-align:left;">
-    <button class="modal-close" style="color:#64748b" onclick="closeTimberEditModal()">✕</button>
-    <h2 style="color:#0f172a;font-size:17px;font-weight:800;margin-bottom:4px;">Edit Timber Rack</h2>
-    <p id="timber-edit-rack-label" style="font-family:'Courier New',monospace;font-size:14px;color:#7c3aed;font-weight:800;margin-bottom:18px;"></p>
-    <input type="hidden" id="timber-edit-rack-id" />
-    <div class="field-group"><label style="color:#64748b">Status</label>
-      <select id="timber-edit-status" style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:14px;width:100%;">
-        <option>In Use</option><option>Empty</option><option>In Repair</option><option>In Transit</option>
-      </select>
-    </div>
-    <div class="field-group"><label style="color:#64748b">Site Name</label><input type="text" id="timber-edit-site" placeholder="e.g. Dublin Depot" /></div>
-    <div class="field-group"><label style="color:#64748b">Notes</label><textarea id="timber-edit-notes" rows="2" style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:14px;width:100%;font-family:inherit;resize:vertical;"></textarea></div>
-    <div id="timber-edit-error" style="color:#dc2626;font-size:13px;margin-bottom:10px;display:none;"></div>
-    <div style="display:flex;gap:10px;margin-top:4px;">
-      <button class="btn-primary" style="flex:2;background:#7c3aed;" onclick="saveTimberEdit()">Save Changes</button>
-      <button class="btn-outline" style="flex:1;border-color:#fecaca;color:#dc2626;" onclick="deleteTimberRack()">Delete</button>
     </div>
   </div>
 </div>
@@ -588,15 +504,10 @@ const SUPABASE_ANON   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const HOME_LAT              = 53.631176;
 const HOME_LNG              = -8.182523;
 const HOME_RADIUS_KM        = 0.5;
-const CAREY_GLASS_LAT       = 53.280391;
-const CAREY_GLASS_LNG       = -6.382467;
-const CAREY_GLASS_RADIUS_KM = 2.0;
 const EMPLOYEE_PIN          = "sdwindows2024";
 
 // ── State ─────────────────────────────────────────────────
 let sb, allRacks = [], currentQrRackId = null, userRole = 'admin', leafletMap = null;
-let allTimberRacks = [], timberShowOnlyInUse = false, timberShowOnlyEmptyAway = false;
-let timberScanSession = [];
 
 // ── Boot ──────────────────────────────────────────────────
 window.addEventListener('load', function() {
@@ -623,7 +534,6 @@ window.addEventListener('load', function() {
 // ── Helpers ───────────────────────────────────────────────
 function haversineKm(la1,ln1,la2,ln2){const R=6371,dL=(la2-la1)*Math.PI/180,dN=(ln2-ln1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
 function isHome(lat,lng){return lat!=null&&lng!=null&&haversineKm(lat,lng,HOME_LAT,HOME_LNG)<=HOME_RADIUS_KM;}
-function isAtCareyGlass(lat,lng){return lat!=null&&lng!=null&&haversineKm(lat,lng,CAREY_GLASS_LAT,CAREY_GLASS_LNG)<=CAREY_GLASS_RADIUS_KM;}
 function toDMS(d,p,n){const dir=d>=0?p:n,a=Math.abs(d),deg=Math.floor(a),mF=(a-deg)*60,m=Math.floor(mF),s=((mF-m)*60).toFixed(1);return `${deg}°${m}′${s}″${dir}`;}
 function formatCoords(lat,lng){return(lat==null||lng==null)?null:`${toDMS(lat,'N','S')}  ${toDMS(Math.abs(lng),'W','E')}`;}
 function mapsUrl(lat,lng){return `https://maps.google.com/?q=${lat},${lng}`;}
@@ -689,14 +599,12 @@ function showApp(){
     document.getElementById('add-tab-btn').style.display='none';
     document.getElementById('deliveries-tab-btn').style.display='';
     document.getElementById('bulkscan-tab-btn').style.display='none';
-    document.getElementById('timber-tab-btn').style.display='none';
     document.getElementById('role-badge').style.display='inline-block';
     document.getElementById('user-email-display').textContent='Employee';
   } else {
     document.getElementById('add-tab-btn').style.display='';
     document.getElementById('deliveries-tab-btn').style.display='';
     document.getElementById('bulkscan-tab-btn').style.display='';
-    document.getElementById('timber-tab-btn').style.display='';
     document.getElementById('role-badge').style.display='none';
   }
   loadRacks();
@@ -713,7 +621,6 @@ function switchTab(tab){
   if(tab==='map') loadMap();
   if(tab==='deliveries') loadDeliveries();
   if(tab==='bulkscan') initBulkScanTab(); else stopBulkScanCamera();
-  if(tab==='timber') loadTimberRacks();
 }
 
 // ── Deliveries ────────────────────────────────────────────
@@ -1258,24 +1165,18 @@ function loadMap(){
   statusEl.textContent='Loading racks…';
   container.style.display='none';
 
-  Promise.all([
-    sb.from('racks').select('*'),
-    sb.from('timber_racks').select('*')
-  ]).then(([{data:rData,error:rErr},{data:tData,error:tErr}])=>{
+  sb.from('racks').select('*').then(({data:rData,error:rErr})=>{
     if(rErr){statusEl.textContent='Error: '+rErr.message;return;}
     allRacks=rData||[];
-    allTimberRacks=tData||[];
     const racks=allRacks.filter(r=>r.last_lat!=null&&r.last_lng!=null);
-    const timberWithGps=allTimberRacks.filter(r=>r.last_lat!=null&&r.last_lng!=null);
-    if(!racks.length&&!timberWithGps.length){statusEl.textContent='No racks with GPS data yet. Scan some QR codes first!';return;}
+    if(!racks.length){statusEl.textContent='No racks with GPS data yet. Scan some QR codes first!';return;}
     statusEl.style.display='none';
     container.style.display='block';
-    renderLeafletMap(racks, timberWithGps);
+    renderLeafletMap(racks);
   });
 }
 
-function renderLeafletMap(racks, timberRacks){
-  timberRacks = timberRacks || [];
+function renderLeafletMap(racks){
   const container=document.getElementById('map-container');
   container.innerHTML='<div id="leaflet-map" style="width:100%;height:560px;"></div>';
   if(leafletMap){leafletMap.remove();leafletMap=null;}
@@ -1373,34 +1274,6 @@ function renderLeafletMap(racks, timberRacks){
 
   leafletMap.addLayer(clusterGroup);
 
-  // ── Carey Glass HQ marker (purple) ───────────────────────
-  const cgHqIcon=L.divIcon({html:`<div style="background:#7c3aed;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:9px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);">CG</div>`,className:'',iconSize:[36,36],iconAnchor:[18,18]});
-  L.marker([CAREY_GLASS_LAT,CAREY_GLASS_LNG],{icon:cgHqIcon}).addTo(leafletMap).bindPopup('<b style="color:#7c3aed">🪵 SD Tallaght HQ</b><br><span style="font-size:11px;color:#64748b;">Return within 2km to delete rack</span>');
-  allPoints.push([CAREY_GLASS_LAT,CAREY_GLASS_LNG]);
-
-  // ── Timber rack markers (purple pins) ────────────────────
-  timberRacks.forEach((r,i)=>{
-    allPoints.push([r.last_lat,r.last_lng]);
-    const pinColor='#7c3aed';
-    const icon=L.divIcon({
-      html:`<div style="background:${pinColor};color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);">🪵</div>`,
-      className:'',iconSize:[32,32],iconAnchor:[16,16]
-    });
-    const coords=formatCoords(r.last_lat,r.last_lng)||'';
-    const marker=L.marker([r.last_lat,r.last_lng],{icon});
-    marker.bindPopup(`
-      <div style="font-family:sans-serif;min-width:180px;">
-        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#7c3aed;margin-bottom:4px;">🪵 Timber Rack</div>
-        <div style="font-weight:800;font-size:15px;margin-bottom:6px;">${escHtml(r.rack_id)}</div>
-        <div style="font-weight:700;color:#7c3aed;margin-bottom:4px;">${escHtml(r.status||'In Use')}</div>
-        ${r.site?`<div style="color:#4f46e5;font-weight:600;margin-bottom:2px;">📍 ${escHtml(r.site)}</div>`:''}
-        ${r.operator?`<div style="color:#64748b;font-size:12px;">👤 ${escHtml(r.operator)}</div>`:''}
-        <div style="color:#94a3b8;font-size:11px;margin-top:4px;">${coords}</div>
-        <div style="color:#94a3b8;font-size:11px;">${fmtDate(r.last_scanned_at)}</div>
-        <a href="${mapsUrl(r.last_lat,r.last_lng)}" target="_blank" style="display:inline-block;margin-top:8px;color:#7c3aed;font-size:12px;font-weight:600;">Open in Google Maps ↗</a>
-      </div>`);
-    marker.addTo(leafletMap);
-  });
 
   leafletMap.fitBounds(allPoints,{padding:[50,50]});
 
@@ -1849,13 +1722,11 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     try { if (typeof nextRackCam !== 'undefined' && nextRackCam.isRunning()) cancelNextRackScan(); } catch(e) {}
     try { if (typeof bulkCam !== 'undefined' && bulkCam.isRunning()) stopBulkScanCamera(); } catch(e) {}
-    try { stopTimberScanCamera(); } catch(e) {}
   }
 });
 window.addEventListener('pagehide', () => {
   try { if (typeof nextRackCam !== 'undefined') nextRackCam.stop(); } catch(e) {}
   try { if (typeof bulkCam !== 'undefined') bulkCam.stop(); } catch(e) {}
-  try { stopTimberScanCamera(); } catch(e) {}
 });
 
 // ── Bulk Scan (admin) ─────────────────────────────────────
@@ -1872,50 +1743,8 @@ function extractRackIdFromScan(text){
   return text.trim();
 }
 
-let bulkScanMode = 'qr'; // 'qr' | 'timber'
-
 function initBulkScanTab(){
   renderBulkScanList();
-}
-
-function setBulkScanMode(mode){
-  // Stop whatever camera is running first
-  if (bulkScanMode === 'timber') {
-    stopTimberScanCamera();
-  } else {
-    bulkCam.stop();
-  }
-  // Reset button visibility regardless of mode
-  const startBtn = document.getElementById('bulkscan-start-btn');
-  const stopBtn  = document.getElementById('bulkscan-stop-btn');
-  if (startBtn) startBtn.style.display = '';
-  if (stopBtn)  stopBtn.style.display  = 'none';
-  setBulkScanStatus('', '');
-
-  bulkScanMode = mode;
-
-  const qrBtn     = document.getElementById('bulkscan-mode-qr');
-  const timberBtn = document.getElementById('bulkscan-mode-timber');
-  const qrStage   = document.getElementById('bulkscan-stage');
-  const tStage    = document.getElementById('bulkscan-timber-stage');
-  const tFields   = document.getElementById('bulkscan-timber-fields');
-  const desc      = document.getElementById('bulkscan-mode-desc');
-
-  if (mode === 'timber') {
-    if (qrBtn)     { qrBtn.className='btn-outline'; qrBtn.style.background=''; qrBtn.style.color=''; }
-    if (timberBtn) { timberBtn.className='btn-primary'; timberBtn.style.background='#7c3aed'; timberBtn.style.color='#fff'; }
-    if (qrStage)   qrStage.classList.add('hidden');
-    if (tStage)    tStage.classList.remove('hidden');
-    if (tFields)   tFields.classList.remove('hidden');
-    if (desc)      desc.textContent = 'Scan Carey Glass barcode labels to register or update timber rack locations.';
-  } else {
-    if (qrBtn)     { qrBtn.className='btn-primary'; qrBtn.style.background=''; qrBtn.style.color=''; }
-    if (timberBtn) { timberBtn.className='btn-outline'; timberBtn.style.background=''; timberBtn.style.color=''; }
-    if (qrStage)   qrStage.classList.remove('hidden');
-    if (tStage)    tStage.classList.add('hidden');
-    if (tFields)   tFields.classList.add('hidden');
-    if (desc)      desc.textContent = "Scan each rack's QR code one after another as they come back to HQ. Your current location is saved for every rack scanned.";
-  }
 }
 
 function setBulkScanStatus(msg, color){
@@ -1934,7 +1763,6 @@ const bulkCam = createQrCam({
 });
 
 async function startBulkScanCamera(){
-  if (bulkScanMode === 'timber') { startTimberScanCamera(); return; }
   if (bulkCam.isRunning()) return;
   primeQrAudio();
   document.getElementById('bulkscan-start-btn').style.display='none';
@@ -1953,7 +1781,6 @@ async function startBulkScanCamera(){
 }
 
 async function stopBulkScanCamera(){
-  if (bulkScanMode === 'timber') { stopTimberScanCamera(); return; }
   await bulkCam.stop();
   const startBtn = document.getElementById('bulkscan-start-btn');
   const stopBtn = document.getElementById('bulkscan-stop-btn');
@@ -2033,32 +1860,14 @@ function renderBulkScanList(){
     listEl.innerHTML = '<div class="empty-state" style="padding:24px 0;">No racks scanned yet this session.</div>';
     return;
   }
-  listEl.innerHTML = bulkScanSession.map(e => {
-    // Timber entries have a `deleted` property; QR entries have a `home` property
-    const isTimber = typeof e.deleted !== 'undefined';
-    let icon, border, subColor, sub;
-    if (isTimber) {
-      icon     = e.deleted ? '↩' : e.ok ? '✅' : '⚠️';
-      border   = e.ok ? (e.deleted ? '#ddd6fe' : '#e2e8f0') : '#fecaca';
-      subColor = e.ok ? (e.deleted ? '#7c3aed' : '#64748b') : '#dc2626';
-      sub      = e.deleted
-        ? `Returned — ${e.message||''}`
-        : (e.ok ? (e.message || e.time.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',second:'2-digit'})) : e.message);
-    } else {
-      icon     = e.ok ? (e.home ? '🏠' : '✅') : '⚠️';
-      border   = e.ok ? '#e2e8f0' : '#fecaca';
-      subColor = e.ok ? '#64748b' : '#dc2626';
-      sub      = e.ok ? e.time.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : escHtml(e.message||'Failed to save');
-    }
-    const idColor = isTimber ? '#7c3aed' : '#0f172a';
-    return `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid ${border};border-radius:8px;padding:10px 12px;">
-      <span style="font-size:16px;">${icon}</span>
+  listEl.innerHTML = bulkScanSession.map(e => `
+    <div style="display:flex;align-items:center;justify-content:between;gap:10px;background:#fff;border:1.5px solid ${e.ok ? '#e2e8f0' : '#fecaca'};border-radius:8px;padding:10px 12px;">
+      <span style="font-size:16px;">${e.ok ? (e.home ? '🏠' : '✅') : '⚠️'}</span>
       <div style="flex:1;">
-        <div style="font-family:'Courier New',monospace;font-weight:700;font-size:13px;color:${idColor};">${escHtml(e.rackId)}</div>
-        <div style="font-size:11px;color:${subColor};">${escHtml(String(sub||''))}</div>
+        <div style="font-family:'Courier New',monospace;font-weight:700;font-size:13px;">${escHtml(e.rackId)}</div>
+        <div style="font-size:11px;color:${e.ok ? '#64748b' : '#dc2626'};">${e.ok ? e.time.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : escHtml(e.message||'Failed to save')}</div>
       </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 }
 
 function clearBulkScanList(){
@@ -2066,345 +1875,7 @@ function clearBulkScanList(){
   renderBulkScanList();
 }
 
-// ══════════════════════════════════════════════════════════════
-// TIMBER RACKS (Carey Glass) — load, render, filter, edit, scan
-// ══════════════════════════════════════════════════════════════
 
-async function loadTimberRacks(){
-  const tbody = document.getElementById('timber-tbody');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading timber racks…</td></tr>';
-  const { data, error } = await sb.from('timber_racks').select('*').order('rack_id');
-  if (error) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-state" style="color:#dc2626">Error: ${error.message}</td></tr>`;
-    return;
-  }
-  allTimberRacks = data || [];
-  applyTimberView();
-}
-
-function applyTimberView(){
-  let list = [...allTimberRacks];
-  const q = (document.getElementById('timber-search')?.value || '').toLowerCase().trim();
-  if (q) list = list.filter(r =>
-    (r.rack_id||'').toLowerCase().includes(q) ||
-    (r.site||'').toLowerCase().includes(q) ||
-    (r.operator||'').toLowerCase().includes(q) ||
-    (r.notes||'').toLowerCase().includes(q)
-  );
-  if (timberShowOnlyInUse)    list = list.filter(r => (r.status||'') === 'In Use');
-  if (timberShowOnlyEmptyAway) list = list.filter(r => (r.status||'') !== 'In Use');
-  renderTimberRacks(list);
-  updateTimberFilterButtons();
-}
-
-function renderTimberRacks(list){
-  const tbody = document.getElementById('timber-tbody');
-  const isEmployee = userRole === 'employee';
-  const actionTh = document.getElementById('timber-action-th');
-  if (actionTh) actionTh.style.display = isEmployee ? 'none' : '';
-  if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No timber racks found.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = list.map(r => {
-    const lat = r.last_lat, lng = r.last_lng;
-    const coordHtml = lat != null && lng != null
-      ? `<a class="coord-link" href="${mapsUrl(lat,lng)}" target="_blank">${formatCoords(lat,lng)}</a>`
-      : `<span class="coord-none">—</span>`;
-    const statusBadge = `<span class="badge badge-timber">${escHtml(r.status||'In Use')}</span>`;
-    const actions = isEmployee ? '' : `
-      <button class="btn-icon" style="background:#7c3aed;" onclick="openTimberEdit('${escHtml(r.rack_id)}','${escHtml(r.status||'')}','${escHtml(r.notes||'')}','${escHtml(r.site||'')}')">✏ Edit</button>`;
-    return `<tr>
-      <td class="rack-id-cell" data-label="Rack ID" style="color:#7c3aed;">${escHtml(r.rack_id)}</td>
-      <td data-label="Status">${statusBadge}</td>
-      <td data-label="Site">${escHtml(r.site||'—')}</td>
-      <td data-label="Coordinates">${coordHtml}</td>
-      <td data-label="Last Scanned">${fmtDate(r.last_scanned_at)}</td>
-      <td data-label="Notes" style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.notes||'—')}</td>
-      <td data-label="Operator">${escHtml(r.operator||'—')}</td>
-      <td class="cell-actions" data-label="Actions" style="${isEmployee?'display:none':''}">${actions}</td>
-    </tr>`;
-  }).join('');
-}
-
-function toggleTimberInUse(){
-  timberShowOnlyInUse = !timberShowOnlyInUse;
-  if (timberShowOnlyInUse) timberShowOnlyEmptyAway = false;
-  applyTimberView();
-}
-function toggleTimberEmptyAway(){
-  timberShowOnlyEmptyAway = !timberShowOnlyEmptyAway;
-  if (timberShowOnlyEmptyAway) timberShowOnlyInUse = false;
-  applyTimberView();
-}
-function updateTimberFilterButtons(){
-  const inUseBtn = document.getElementById('timber-inuse-btn');
-  const emptyBtn = document.getElementById('timber-empty-away-btn');
-  if (inUseBtn) { inUseBtn.style.background = timberShowOnlyInUse ? '#7c3aed' : ''; inUseBtn.style.color = timberShowOnlyInUse ? '#fff' : ''; }
-  if (emptyBtn) { emptyBtn.style.background = timberShowOnlyEmptyAway ? '#7c3aed' : ''; emptyBtn.style.color = timberShowOnlyEmptyAway ? '#fff' : ''; }
-}
-
-// ── Timber Edit Modal ─────────────────────────────────────
-function openTimberEdit(rackId, status, notes, site){
-  document.getElementById('timber-edit-rack-id').value = rackId;
-  document.getElementById('timber-edit-rack-label').textContent = rackId;
-  document.getElementById('timber-edit-status').value = status || 'In Use';
-  document.getElementById('timber-edit-notes').value = notes || '';
-  document.getElementById('timber-edit-site').value = site || '';
-  document.getElementById('timber-edit-error').style.display = 'none';
-  document.getElementById('timber-edit-modal').classList.remove('hidden');
-}
-function closeTimberEditModal(e){
-  if (!e || e.target === document.getElementById('timber-edit-modal')) {
-    document.getElementById('timber-edit-modal').classList.add('hidden');
-  }
-}
-async function saveTimberEdit(){
-  const rackId  = document.getElementById('timber-edit-rack-id').value;
-  const status  = document.getElementById('timber-edit-status').value;
-  const notes   = document.getElementById('timber-edit-notes').value.trim();
-  const site    = document.getElementById('timber-edit-site').value.trim();
-  const errEl   = document.getElementById('timber-edit-error');
-  errEl.style.display = 'none';
-  const { error } = await sb.from('timber_racks').update({
-    status, notes: notes||null, site: site||null
-  }).eq('rack_id', rackId);
-  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
-  document.getElementById('timber-edit-modal').classList.add('hidden');
-  showToast(`Timber rack "${rackId}" updated`);
-  loadTimberRacks();
-}
-async function deleteTimberRack(){
-  const rackId = document.getElementById('timber-edit-rack-id').value;
-  if (!confirm(`Delete timber rack "${rackId}"? This cannot be undone.`)) return;
-  const { error } = await sb.from('timber_racks').delete().eq('rack_id', rackId);
-  if (error) { document.getElementById('timber-edit-error').textContent = error.message; document.getElementById('timber-edit-error').style.display = 'block'; return; }
-  document.getElementById('timber-edit-modal').classList.add('hidden');
-  showToast(`Timber rack "${rackId}" deleted`);
-  loadTimberRacks();
-}
-
-// ── Timber Barcode Scanner (Quagga2) ─────────────────────
-let _timberQuaggaRunning = false;
-let _timberLastScan = null; // debounce — ignore same code within 4s
-
-function setTimberScanStatus(msg, color){
-  const el = document.getElementById('timber-scan-status');
-  if (el) { el.textContent = msg; el.style.color = color || '#64748b'; }
-}
-
-// GPS cache — same pattern as bulk scan
-let _timberScanPos = null, _timberScanPosAt = 0;
-const TIMBER_POS_MAX_AGE = 60000; // 60s
-
-function primeTimberScanPosition(){
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(
-    (pos) => { _timberScanPos = pos; _timberScanPosAt = Date.now(); },
-    () => {},
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
-  );
-}
-
-function getTimberScanPosition(){
-  return new Promise((resolve, reject) => {
-    if (_timberScanPos && (Date.now() - _timberScanPosAt) < TIMBER_POS_MAX_AGE) return resolve(_timberScanPos);
-    if (!navigator.geolocation) return reject(new Error('GPS not available on this device.'));
-    navigator.geolocation.getCurrentPosition(
-      (pos) => { _timberScanPos = pos; _timberScanPosAt = Date.now(); resolve(pos); },
-      (err)  => reject(err),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
-    );
-  });
-}
-
-function startTimberScanCamera(){
-  if (_timberQuaggaRunning) return;
-  const startBtn = document.getElementById('bulkscan-start-btn');
-  const stopBtn  = document.getElementById('bulkscan-stop-btn');
-  if (startBtn) startBtn.style.display = 'none';
-  if (stopBtn)  stopBtn.style.display  = '';
-  setBulkScanStatus('📡 Starting camera…', '#4f46e5');
-  const hintEl = document.getElementById('bulkscan-timber-hint');
-  if (hintEl) hintEl.textContent = 'Starting camera…';
-  primeTimberScanPosition();
-
-  // Quagga2 is a global singleton — make sure any previous instance is stopped
-  try { Quagga.stop(); } catch(e) {}
-
-  Quagga.init({
-    inputStream: {
-      name: 'Live',
-      type: 'LiveStream',
-      target: document.getElementById('bulkscan-timber-stage'),
-      constraints: {
-        facingMode: 'environment',
-        width:  { ideal: 1280 },
-        height: { ideal: 720 }
-      }
-    },
-    decoder: {
-      readers: ['code_128_reader', 'code_39_reader', 'ean_reader', 'ean_8_reader']
-    },
-    locate: true,
-    numOfWorkers: 0  // Required for iOS Safari (no SharedArrayBuffer / workers in WKWebView)
-  }, function(err){
-    if (err) {
-      _timberQuaggaRunning = false;
-      if (startBtn) startBtn.style.display = '';
-      if (stopBtn)  stopBtn.style.display  = 'none';
-      setBulkScanStatus('⚠ Camera error: ' + (err.message || err), '#dc2626');
-      if (hintEl) hintEl.textContent = 'Camera failed — check permissions';
-      return;
-    }
-    _timberQuaggaRunning = true;
-    Quagga.start();
-    setBulkScanStatus('📷 Camera ready — hold barcode steady', '#16a34a');
-    if (hintEl) hintEl.textContent = 'Hold the barcode steady in the frame';
-  });
-
-  Quagga.onDetected(function(result){
-    if (!_timberQuaggaRunning) return;
-    const code = result && result.codeResult && result.codeResult.code;
-    if (!code) return;
-    // Debounce — ignore the same code for 4 seconds
-    const now = Date.now();
-    if (_timberLastScan && _timberLastScan.code === code && (now - _timberLastScan.at) < 4000) return;
-    _timberLastScan = { code, at: now };
-    // Use full Carey Glass ID tag as rack_id
-    const rackId = parseCareyGlassBarcode(code);
-    qrBuzz();
-    setBulkScanStatus(`🔍 Scanned: ${code} → ${rackId}`, '#4f46e5');
-    if (hintEl) hintEl.textContent = `Got ${rackId} — saving…`;
-    onTimberBarcodeScanned(rackId);
-  });
-}
-
-function parseCareyGlassBarcode(raw){
-  // Use the full Carey Glass ID tag directly as the rack_id.
-  // e.g. scanning "0010200735" → stored as "CG-0010200735"
-  const cleaned = raw.replace(/\s/g,'').replace(/[^A-Za-z0-9\-_]/g,'').toUpperCase();
-  return 'CG-' + cleaned;
-}
-
-function stopTimberScanCamera(){
-  if (!_timberQuaggaRunning) return;
-  try { Quagga.stop(); } catch(e) {}
-  _timberQuaggaRunning = false;
-  // Clear out Quagga's injected video/canvas elements
-  const container = document.getElementById('bulkscan-timber-stage');
-  if (container) {
-    container.querySelectorAll('video,canvas').forEach(el => el.remove());
-    const hint = document.getElementById('bulkscan-timber-hint');
-    if (hint) hint.textContent = 'Press Start Camera to begin';
-  }
-  const startBtn = document.getElementById('bulkscan-start-btn');
-  const stopBtn  = document.getElementById('bulkscan-stop-btn');
-  if (startBtn) startBtn.style.display = '';
-  if (stopBtn)  stopBtn.style.display  = 'none';
-  setBulkScanStatus('', '');
-}
-
-async function onTimberBarcodeScanned(rackId){
-  if (!rackId) return;
-
-  const hintEl = document.getElementById('bulkscan-timber-hint');
-
-  let pos;
-  try {
-    pos = await getTimberScanPosition();
-  } catch(err) {
-    const msg = 'No GPS fix — ' + (err.message || err);
-    setBulkScanStatus('⚠ ' + msg, '#dc2626');
-    bulkScanSession.unshift({ rackId, time: new Date(), ok: false, deleted: false, message: msg });
-    renderBulkScanList();
-    return;
-  }
-
-  const { latitude: lat, longitude: lng } = pos.coords;
-  const atCarey = isAtCareyGlass(lat, lng);
-  const atHome  = isHome(lat, lng);
-
-  const operator = (document.getElementById('timber-scan-operator')?.value || '').trim() ||
-                   (document.getElementById('user-email-display')?.textContent || 'Admin').trim();
-  const site     = (document.getElementById('timber-scan-site')?.value || '').trim();
-
-  // ── Delete logic: at Carey Glass HQ (2km) OR SDW HQ (0.5km) → rack returned ──
-  if (atCarey || atHome) {
-    const location = atCarey ? 'SD Tallaght HQ' : 'SDW Yard';
-    const { error } = await sb.from('timber_racks').delete().eq('rack_id', rackId);
-    if (error) {
-      const msg = 'Delete failed: ' + error.message;
-      setBulkScanStatus('⚠ ' + msg, '#dc2626');
-      bulkScanSession.unshift({ rackId, time: new Date(), ok: false, deleted: false, message: msg });
-    } else {
-      setBulkScanStatus(`✅ ${rackId} deleted — returned at ${location}`, '#16a34a');
-      if (hintEl) hintEl.textContent = `${rackId} removed — returned`;
-      bulkScanSession.unshift({ rackId, time: new Date(), ok: true, deleted: true, message: `Returned at ${location}` });
-      // Refresh the table quietly in the background
-      const { data } = await sb.from('timber_racks').select('*').order('rack_id');
-      allTimberRacks = data || [];
-      applyTimberView();
-    }
-    renderBulkScanList();
-    return;
-  }
-
-  // ── Normal scan: upsert as In Use ────────────────────────
-  const { error } = await sb.from('timber_racks').upsert({
-    rack_id: rackId,
-    status: 'In Use',
-    site: site || null,
-    operator: operator || null,
-    last_lat: lat,
-    last_lng: lng,
-    last_scanned_at: new Date().toISOString()
-  }, { onConflict: 'rack_id' });
-
-  if (error) {
-    const msg = error.message;
-    setBulkScanStatus('⚠ ' + msg, '#dc2626');
-    bulkScanSession.unshift({ rackId, time: new Date(), ok: false, deleted: false, message: msg });
-  } else {
-    setBulkScanStatus(`✅ ${rackId} saved — In Use`, '#16a34a');
-    if (hintEl) hintEl.textContent = 'Hold barcode steady in the frame';
-    bulkScanSession.unshift({ rackId, time: new Date(), ok: true, deleted: false, message: site || '' });
-    const { data } = await sb.from('timber_racks').select('*').order('rack_id');
-    allTimberRacks = data || [];
-    applyTimberView();
-  }
-  renderBulkScanList();
-}
-
-function renderTimberScanList(){
-  const listEl  = document.getElementById('timber-scan-list');
-  const countEl = document.getElementById('timber-scan-count');
-  if (!listEl || !countEl) return;
-  countEl.textContent = timberScanSession.length;
-  if (!timberScanSession.length) {
-    listEl.innerHTML = '<div class="empty-state" style="padding:24px 0;">No racks scanned yet.</div>';
-    return;
-  }
-  listEl.innerHTML = timberScanSession.map(e => {
-    const icon    = e.deleted ? '↩' : e.ok ? '✅' : '⚠️';
-    const border  = e.ok ? (e.deleted ? '#ddd6fe' : '#e2e8f0') : '#fecaca';
-    const subColor = e.ok ? (e.deleted ? '#7c3aed' : '#64748b') : '#dc2626';
-    const sub     = e.deleted ? `Returned — ${e.message}` : (e.ok ? (e.message || e.time.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',second:'2-digit'})) : e.message);
-    return `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid ${border};border-radius:8px;padding:10px 12px;">
-      <span style="font-size:16px;">${icon}</span>
-      <div style="flex:1;">
-        <div style="font-family:'Courier New',monospace;font-weight:700;font-size:13px;color:#7c3aed;">${escHtml(e.rackId)}</div>
-        <div style="font-size:11px;color:${subColor};">${escHtml(sub||'')}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function clearTimberScanList(){
-  timberScanSession = [];
-  renderTimberScanList();
-}
 
 </script>
 </body>
