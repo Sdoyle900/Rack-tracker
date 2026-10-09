@@ -159,7 +159,7 @@
 
     /* ── Tables become stacked cards on phones ──────────────── */
     /* Quagga2 renders its own video+canvas inside the container — force them to fill it */
-    #timber-cam-container video,#timber-cam-container canvas.drawingBuffer{
+    #bulkscan-timber-stage video,#bulkscan-timber-stage canvas.drawingBuffer{
       position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:cover;
     }
     .badge-timber{background:#ede9fe;color:#5b21b6}
@@ -386,27 +386,42 @@
         </table>
       </div>
 
-      <!-- Carey Glass Barcode Scanner (admin only) -->
-      <div id="timber-scan-section" style="margin-top:28px;background:#fff;border-radius:10px;padding:24px;border:1.5px solid #e2e8f0;">
-        <h3 style="font-size:15px;font-weight:800;margin-bottom:4px;color:#0f172a;">📷 Scan Carey Glass Barcode</h3>
-        <p style="color:#64748b;font-size:13px;margin-bottom:16px;">Scan the barcode on a Carey Glass timber rack to register or update it. Scanning within <strong>2 km of SD Tallaght HQ</strong> or <strong>0.5 km of SDW HQ</strong> (Roscommon) will <strong>delete</strong> the rack record — it has been returned.</p>
+    </div>
+  </div>
 
-        <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
-          <!-- Camera box -->
-          <div style="flex:0 0 380px;max-width:100%;">
-            <div id="timber-cam-container" style="position:relative;background:#0f172a;border-radius:14px;overflow:hidden;width:100%;height:58vh;max-height:480px;min-height:300px;">
-              <!-- Quagga2 appends its video + canvas here -->
-              <div id="timber-scan-hint" style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:linear-gradient(transparent,rgba(15,23,42,.85));color:#fff;font-size:14px;font-weight:600;text-align:center;z-index:10;pointer-events:none;">Press Start Camera to begin</div>
-            </div>
-            <div id="timber-scan-status" style="margin-top:10px;font-size:13px;font-weight:600;color:#64748b;min-height:18px;"></div>
-            <div style="display:flex;gap:10px;margin-top:10px;">
-              <button class="btn-primary" id="timber-start-btn" onclick="startTimberScanCamera()" style="background:#7c3aed;">▶ Start Camera</button>
-              <button class="btn-outline" id="timber-stop-btn" onclick="stopTimberScanCamera()" style="display:none;">■ Stop Camera</button>
-            </div>
+  <div id="tab-bulkscan" class="tab-content hidden">
+    <div class="content-inner">
+      <!-- Mode toggle -->
+      <div style="margin-bottom:16px;">
+        <h2 style="font-size:18px;font-weight:800;margin-bottom:10px;">📷 Bulk Scan</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+          <button id="bulkscan-mode-qr" class="btn-primary" onclick="setBulkScanMode('qr')" style="font-size:13px;padding:8px 18px;">🔲 Rack QR Codes</button>
+          <button id="bulkscan-mode-timber" class="btn-outline" onclick="setBulkScanMode('timber')" style="font-size:13px;padding:8px 18px;">🪵 Timber Barcodes</button>
+        </div>
+        <p id="bulkscan-mode-desc" style="color:#64748b;font-size:13px;margin-top:4px;">Scan each rack's QR code one after another as they come back to HQ. Your current location is saved for every rack scanned.</p>
+      </div>
+
+      <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+        <div style="flex:0 0 380px;max-width:100%;">
+          <!-- QR camera (jsQR) — shown in QR mode -->
+          <div id="bulkscan-stage" style="position:relative;background:#0f172a;border-radius:14px;overflow:hidden;width:100%;height:58vh;max-height:480px;min-height:300px;">
+            <video id="bulkscan-video" playsinline muted autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
+            <canvas id="bulkscan-overlay" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;"></canvas>
+            <div id="bulkscan-hint" style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:linear-gradient(transparent,rgba(15,23,42,.85));color:#fff;font-size:14px;font-weight:600;text-align:center;">Press Start Camera to begin</div>
           </div>
-
-          <!-- Site / Operator fields + session log -->
-          <div style="flex:1;min-width:280px;">
+          <!-- Timber camera (Quagga2) — shown in timber mode -->
+          <div id="bulkscan-timber-stage" class="hidden" style="position:relative;background:#0f172a;border-radius:14px;overflow:hidden;width:100%;height:58vh;max-height:480px;min-height:300px;">
+            <!-- Quagga2 injects its video + canvas here -->
+            <div id="bulkscan-timber-hint" style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:linear-gradient(transparent,rgba(15,23,42,.85));color:#fff;font-size:14px;font-weight:600;text-align:center;z-index:10;pointer-events:none;">Press Start Camera to begin</div>
+          </div>
+          <div id="bulkscan-status" style="margin-top:10px;font-size:13px;font-weight:600;color:#64748b;min-height:18px;"></div>
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <button class="btn-primary" id="bulkscan-start-btn" onclick="startBulkScanCamera()">▶ Start Camera</button>
+            <button class="btn-outline" id="bulkscan-stop-btn" onclick="stopBulkScanCamera()" style="display:none;">■ Stop Camera</button>
+          </div>
+          <!-- Timber-mode fields (site / operator) — hidden in QR mode -->
+          <div id="bulkscan-timber-fields" class="hidden" style="margin-top:16px;padding-top:14px;border-top:1px solid #e2e8f0;">
+            <p style="color:#64748b;font-size:12px;margin-bottom:12px;">Scanning within <strong>2 km of SD Tallaght HQ</strong> or <strong>0.5 km of SDW HQ</strong> (Roscommon) will <strong>delete</strong> the rack record — rack has been returned.</p>
             <div class="field-group">
               <label style="color:#64748b;">Site Name <span class="optional">(optional)</span></label>
               <input type="text" id="timber-scan-site" placeholder="e.g. Castlelands, Dublin Site" />
@@ -415,37 +430,6 @@
               <label style="color:#64748b;">Operator <span style="color:#dc2626;font-weight:700;">*</span></label>
               <input type="text" id="timber-scan-operator" placeholder="Your name" />
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px;">
-              <h3 style="font-size:14px;font-weight:800;color:#0f172a;">Scanned this session (<span id="timber-scan-count">0</span>)</h3>
-              <button class="btn-outline" onclick="clearTimberScanList()" style="font-size:12px;padding:6px 12px;">Clear list</button>
-            </div>
-            <div id="timber-scan-list" style="display:flex;flex-direction:column;gap:6px;max-height:380px;overflow-y:auto;">
-              <div class="empty-state" style="padding:24px 0;">No racks scanned yet.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="tab-bulkscan" class="tab-content hidden">
-    <div class="content-inner">
-      <div style="margin-bottom:16px;">
-        <h2 style="font-size:18px;font-weight:800;">Bulk Scan — Racks Returned to Yard</h2>
-        <p style="color:#64748b;font-size:13px;margin-top:2px;">Scan each rack's QR code one after another as they come back to HQ. Your current location is saved for every rack scanned — same as a normal QR check-in.</p>
-      </div>
-
-      <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
-        <div style="flex:0 0 380px;max-width:100%;">
-          <div id="bulkscan-stage" style="position:relative;background:#0f172a;border-radius:14px;overflow:hidden;width:100%;height:58vh;max-height:480px;min-height:300px;">
-            <video id="bulkscan-video" playsinline muted autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
-            <canvas id="bulkscan-overlay" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;"></canvas>
-            <div id="bulkscan-hint" style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:linear-gradient(transparent,rgba(15,23,42,.85));color:#fff;font-size:14px;font-weight:600;text-align:center;">Press Start Camera to begin</div>
-          </div>
-          <div id="bulkscan-status" style="margin-top:10px;font-size:13px;font-weight:600;color:#64748b;min-height:18px;"></div>
-          <div style="display:flex;gap:10px;margin-top:10px;">
-            <button class="btn-primary" id="bulkscan-start-btn" onclick="startBulkScanCamera()">▶ Start Camera</button>
-            <button class="btn-outline" id="bulkscan-stop-btn" onclick="stopBulkScanCamera()" style="display:none;">■ Stop Camera</button>
           </div>
         </div>
 
@@ -454,7 +438,7 @@
             <h3 style="font-size:14px;font-weight:800;color:#0f172a;">Scanned this session (<span id="bulkscan-count">0</span>)</h3>
             <button class="btn-outline" onclick="clearBulkScanList()" style="font-size:12px;padding:6px 12px;">Clear list</button>
           </div>
-          <div id="bulkscan-list" style="display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto;">
+          <div id="bulkscan-list" style="display:flex;flex-direction:column;gap:6px;max-height:480px;overflow-y:auto;">
             <div class="empty-state" style="padding:24px 0;">No racks scanned yet this session.</div>
           </div>
         </div>
@@ -729,7 +713,7 @@ function switchTab(tab){
   if(tab==='map') loadMap();
   if(tab==='deliveries') loadDeliveries();
   if(tab==='bulkscan') initBulkScanTab(); else stopBulkScanCamera();
-  if(tab==='timber') loadTimberRacks(); else stopTimberScanCamera();
+  if(tab==='timber') loadTimberRacks();
 }
 
 // ── Deliveries ────────────────────────────────────────────
@@ -1888,8 +1872,50 @@ function extractRackIdFromScan(text){
   return text.trim();
 }
 
+let bulkScanMode = 'qr'; // 'qr' | 'timber'
+
 function initBulkScanTab(){
   renderBulkScanList();
+}
+
+function setBulkScanMode(mode){
+  // Stop whatever camera is running first
+  if (bulkScanMode === 'timber') {
+    stopTimberScanCamera();
+  } else {
+    bulkCam.stop();
+  }
+  // Reset button visibility regardless of mode
+  const startBtn = document.getElementById('bulkscan-start-btn');
+  const stopBtn  = document.getElementById('bulkscan-stop-btn');
+  if (startBtn) startBtn.style.display = '';
+  if (stopBtn)  stopBtn.style.display  = 'none';
+  setBulkScanStatus('', '');
+
+  bulkScanMode = mode;
+
+  const qrBtn     = document.getElementById('bulkscan-mode-qr');
+  const timberBtn = document.getElementById('bulkscan-mode-timber');
+  const qrStage   = document.getElementById('bulkscan-stage');
+  const tStage    = document.getElementById('bulkscan-timber-stage');
+  const tFields   = document.getElementById('bulkscan-timber-fields');
+  const desc      = document.getElementById('bulkscan-mode-desc');
+
+  if (mode === 'timber') {
+    if (qrBtn)     { qrBtn.className='btn-outline'; qrBtn.style.background=''; qrBtn.style.color=''; }
+    if (timberBtn) { timberBtn.className='btn-primary'; timberBtn.style.background='#7c3aed'; timberBtn.style.color='#fff'; }
+    if (qrStage)   qrStage.classList.add('hidden');
+    if (tStage)    tStage.classList.remove('hidden');
+    if (tFields)   tFields.classList.remove('hidden');
+    if (desc)      desc.textContent = 'Scan Carey Glass barcode labels to register or update timber rack locations.';
+  } else {
+    if (qrBtn)     { qrBtn.className='btn-primary'; qrBtn.style.background=''; qrBtn.style.color=''; }
+    if (timberBtn) { timberBtn.className='btn-outline'; timberBtn.style.background=''; timberBtn.style.color=''; }
+    if (qrStage)   qrStage.classList.remove('hidden');
+    if (tStage)    tStage.classList.add('hidden');
+    if (tFields)   tFields.classList.add('hidden');
+    if (desc)      desc.textContent = "Scan each rack's QR code one after another as they come back to HQ. Your current location is saved for every rack scanned.";
+  }
 }
 
 function setBulkScanStatus(msg, color){
@@ -1908,6 +1934,7 @@ const bulkCam = createQrCam({
 });
 
 async function startBulkScanCamera(){
+  if (bulkScanMode === 'timber') { startTimberScanCamera(); return; }
   if (bulkCam.isRunning()) return;
   primeQrAudio();
   document.getElementById('bulkscan-start-btn').style.display='none';
@@ -1926,6 +1953,7 @@ async function startBulkScanCamera(){
 }
 
 async function stopBulkScanCamera(){
+  if (bulkScanMode === 'timber') { stopTimberScanCamera(); return; }
   await bulkCam.stop();
   const startBtn = document.getElementById('bulkscan-start-btn');
   const stopBtn = document.getElementById('bulkscan-stop-btn');
@@ -2005,14 +2033,32 @@ function renderBulkScanList(){
     listEl.innerHTML = '<div class="empty-state" style="padding:24px 0;">No racks scanned yet this session.</div>';
     return;
   }
-  listEl.innerHTML = bulkScanSession.map(e => `
-    <div style="display:flex;align-items:center;justify-content:between;gap:10px;background:#fff;border:1.5px solid ${e.ok ? '#e2e8f0' : '#fecaca'};border-radius:8px;padding:10px 12px;">
-      <span style="font-size:16px;">${e.ok ? (e.home ? '🏠' : '✅') : '⚠️'}</span>
+  listEl.innerHTML = bulkScanSession.map(e => {
+    // Timber entries have a `deleted` property; QR entries have a `home` property
+    const isTimber = typeof e.deleted !== 'undefined';
+    let icon, border, subColor, sub;
+    if (isTimber) {
+      icon     = e.deleted ? '↩' : e.ok ? '✅' : '⚠️';
+      border   = e.ok ? (e.deleted ? '#ddd6fe' : '#e2e8f0') : '#fecaca';
+      subColor = e.ok ? (e.deleted ? '#7c3aed' : '#64748b') : '#dc2626';
+      sub      = e.deleted
+        ? `Returned — ${e.message||''}`
+        : (e.ok ? (e.message || e.time.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',second:'2-digit'})) : e.message);
+    } else {
+      icon     = e.ok ? (e.home ? '🏠' : '✅') : '⚠️';
+      border   = e.ok ? '#e2e8f0' : '#fecaca';
+      subColor = e.ok ? '#64748b' : '#dc2626';
+      sub      = e.ok ? e.time.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : escHtml(e.message||'Failed to save');
+    }
+    const idColor = isTimber ? '#7c3aed' : '#0f172a';
+    return `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid ${border};border-radius:8px;padding:10px 12px;">
+      <span style="font-size:16px;">${icon}</span>
       <div style="flex:1;">
-        <div style="font-family:'Courier New',monospace;font-weight:700;font-size:13px;">${escHtml(e.rackId)}</div>
-        <div style="font-size:11px;color:${e.ok ? '#64748b' : '#dc2626'};">${e.ok ? e.time.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : escHtml(e.message||'Failed to save')}</div>
+        <div style="font-family:'Courier New',monospace;font-weight:700;font-size:13px;color:${idColor};">${escHtml(e.rackId)}</div>
+        <div style="font-size:11px;color:${subColor};">${escHtml(String(sub||''))}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function clearBulkScanList(){
@@ -2175,12 +2221,13 @@ function getTimberScanPosition(){
 
 function startTimberScanCamera(){
   if (_timberQuaggaRunning) return;
-  const startBtn = document.getElementById('timber-start-btn');
-  const stopBtn  = document.getElementById('timber-stop-btn');
+  const startBtn = document.getElementById('bulkscan-start-btn');
+  const stopBtn  = document.getElementById('bulkscan-stop-btn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn)  stopBtn.style.display  = '';
-  setTimberScanStatus('📡 Starting camera…', '#4f46e5');
-  document.getElementById('timber-scan-hint').textContent = 'Starting camera…';
+  setBulkScanStatus('📡 Starting camera…', '#4f46e5');
+  const hintEl = document.getElementById('bulkscan-timber-hint');
+  if (hintEl) hintEl.textContent = 'Starting camera…';
   primeTimberScanPosition();
 
   // Quagga2 is a global singleton — make sure any previous instance is stopped
@@ -2190,7 +2237,7 @@ function startTimberScanCamera(){
     inputStream: {
       name: 'Live',
       type: 'LiveStream',
-      target: document.getElementById('timber-cam-container'),
+      target: document.getElementById('bulkscan-timber-stage'),
       constraints: {
         facingMode: 'environment',
         width:  { ideal: 1280 },
@@ -2207,14 +2254,14 @@ function startTimberScanCamera(){
       _timberQuaggaRunning = false;
       if (startBtn) startBtn.style.display = '';
       if (stopBtn)  stopBtn.style.display  = 'none';
-      setTimberScanStatus('⚠ Camera error: ' + (err.message || err), '#dc2626');
-      document.getElementById('timber-scan-hint').textContent = 'Camera failed — check permissions';
+      setBulkScanStatus('⚠ Camera error: ' + (err.message || err), '#dc2626');
+      if (hintEl) hintEl.textContent = 'Camera failed — check permissions';
       return;
     }
     _timberQuaggaRunning = true;
     Quagga.start();
-    setTimberScanStatus('📷 Camera ready — hold barcode steady', '#16a34a');
-    document.getElementById('timber-scan-hint').textContent = 'Hold the barcode steady in the frame';
+    setBulkScanStatus('📷 Camera ready — hold barcode steady', '#16a34a');
+    if (hintEl) hintEl.textContent = 'Hold the barcode steady in the frame';
   });
 
   Quagga.onDetected(function(result){
@@ -2225,27 +2272,20 @@ function startTimberScanCamera(){
     const now = Date.now();
     if (_timberLastScan && _timberLastScan.code === code && (now - _timberLastScan.at) < 4000) return;
     _timberLastScan = { code, at: now };
-    // Parse Carey Glass rack ID — barcodes look like "0010200735", rack number is last 5 digits
+    // Use full Carey Glass ID tag as rack_id
     const rackId = parseCareyGlassBarcode(code);
     qrBuzz();
-    setTimberScanStatus(`🔍 Scanned: ${code} → ${rackId}`, '#4f46e5');
-    document.getElementById('timber-scan-hint').textContent = `Got ${rackId} — saving…`;
+    setBulkScanStatus(`🔍 Scanned: ${code} → ${rackId}`, '#4f46e5');
+    if (hintEl) hintEl.textContent = `Got ${rackId} — saving…`;
     onTimberBarcodeScanned(rackId);
   });
 }
 
 function parseCareyGlassBarcode(raw){
-  // Carey Glass serial format: e.g. "0010200735"
-  // Convention: strip leading zeros and use the significant digits,
-  // prefixed with "CG-" so it's distinguishable in the database.
-  // If the code is all digits and 10 chars, take the last 5 as the rack number.
-  const digits = raw.replace(/\s/g,'');
-  if (/^\d+$/.test(digits) && digits.length >= 5) {
-    const num = parseInt(digits.slice(-5), 10);
-    return 'CG-' + String(num).padStart(5, '0');
-  }
-  // Otherwise use the raw value, prefixed
-  return 'CG-' + digits.replace(/[^A-Za-z0-9\-_]/g,'').toUpperCase();
+  // Use the full Carey Glass ID tag directly as the rack_id.
+  // e.g. scanning "0010200735" → stored as "CG-0010200735"
+  const cleaned = raw.replace(/\s/g,'').replace(/[^A-Za-z0-9\-_]/g,'').toUpperCase();
+  return 'CG-' + cleaned;
 }
 
 function stopTimberScanCamera(){
@@ -2253,30 +2293,32 @@ function stopTimberScanCamera(){
   try { Quagga.stop(); } catch(e) {}
   _timberQuaggaRunning = false;
   // Clear out Quagga's injected video/canvas elements
-  const container = document.getElementById('timber-cam-container');
+  const container = document.getElementById('bulkscan-timber-stage');
   if (container) {
     container.querySelectorAll('video,canvas').forEach(el => el.remove());
-    const hint = document.getElementById('timber-scan-hint');
+    const hint = document.getElementById('bulkscan-timber-hint');
     if (hint) hint.textContent = 'Press Start Camera to begin';
   }
-  const startBtn = document.getElementById('timber-start-btn');
-  const stopBtn  = document.getElementById('timber-stop-btn');
+  const startBtn = document.getElementById('bulkscan-start-btn');
+  const stopBtn  = document.getElementById('bulkscan-stop-btn');
   if (startBtn) startBtn.style.display = '';
   if (stopBtn)  stopBtn.style.display  = 'none';
-  setTimberScanStatus('', '');
+  setBulkScanStatus('', '');
 }
 
 async function onTimberBarcodeScanned(rackId){
   if (!rackId) return;
+
+  const hintEl = document.getElementById('bulkscan-timber-hint');
 
   let pos;
   try {
     pos = await getTimberScanPosition();
   } catch(err) {
     const msg = 'No GPS fix — ' + (err.message || err);
-    setTimberScanStatus('⚠ ' + msg, '#dc2626');
-    timberScanSession.unshift({ rackId, time: new Date(), ok: false, deleted: false, message: msg });
-    renderTimberScanList();
+    setBulkScanStatus('⚠ ' + msg, '#dc2626');
+    bulkScanSession.unshift({ rackId, time: new Date(), ok: false, deleted: false, message: msg });
+    renderBulkScanList();
     return;
   }
 
@@ -2294,18 +2336,18 @@ async function onTimberBarcodeScanned(rackId){
     const { error } = await sb.from('timber_racks').delete().eq('rack_id', rackId);
     if (error) {
       const msg = 'Delete failed: ' + error.message;
-      setTimberScanStatus('⚠ ' + msg, '#dc2626');
-      timberScanSession.unshift({ rackId, time: new Date(), ok: false, deleted: false, message: msg });
+      setBulkScanStatus('⚠ ' + msg, '#dc2626');
+      bulkScanSession.unshift({ rackId, time: new Date(), ok: false, deleted: false, message: msg });
     } else {
-      setTimberScanStatus(`✅ ${rackId} deleted — returned at ${location}`, '#16a34a');
-      document.getElementById('timber-scan-hint').textContent = `${rackId} removed — returned`;
-      timberScanSession.unshift({ rackId, time: new Date(), ok: true, deleted: true, message: `Returned at ${location}` });
+      setBulkScanStatus(`✅ ${rackId} deleted — returned at ${location}`, '#16a34a');
+      if (hintEl) hintEl.textContent = `${rackId} removed — returned`;
+      bulkScanSession.unshift({ rackId, time: new Date(), ok: true, deleted: true, message: `Returned at ${location}` });
       // Refresh the table quietly in the background
       const { data } = await sb.from('timber_racks').select('*').order('rack_id');
       allTimberRacks = data || [];
       applyTimberView();
     }
-    renderTimberScanList();
+    renderBulkScanList();
     return;
   }
 
@@ -2322,17 +2364,17 @@ async function onTimberBarcodeScanned(rackId){
 
   if (error) {
     const msg = error.message;
-    setTimberScanStatus('⚠ ' + msg, '#dc2626');
-    timberScanSession.unshift({ rackId, time: new Date(), ok: false, deleted: false, message: msg });
+    setBulkScanStatus('⚠ ' + msg, '#dc2626');
+    bulkScanSession.unshift({ rackId, time: new Date(), ok: false, deleted: false, message: msg });
   } else {
-    setTimberScanStatus(`✅ ${rackId} saved — In Use`, '#16a34a');
-    document.getElementById('timber-scan-hint').textContent = 'Hold barcode steady in the frame';
-    timberScanSession.unshift({ rackId, time: new Date(), ok: true, deleted: false, message: site || '' });
+    setBulkScanStatus(`✅ ${rackId} saved — In Use`, '#16a34a');
+    if (hintEl) hintEl.textContent = 'Hold barcode steady in the frame';
+    bulkScanSession.unshift({ rackId, time: new Date(), ok: true, deleted: false, message: site || '' });
     const { data } = await sb.from('timber_racks').select('*').order('rack_id');
     allTimberRacks = data || [];
     applyTimberView();
   }
-  renderTimberScanList();
+  renderBulkScanList();
 }
 
 function renderTimberScanList(){
